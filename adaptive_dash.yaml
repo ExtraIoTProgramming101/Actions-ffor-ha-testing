@@ -1,0 +1,372 @@
+---
+button_card_templates: !include_dir_merge_named "../../../custom_components/ui_lovelace_minimalist/__ui_minimalist__/ulm_templates/"
+
+title: "Pantalla"
+theme: "minimalist-desktop"
+background: "var(--background-image)"
+wallpanel:
+  enabled: false
+  screensaver_entity: input_boolean.wallpanel_state_${browser_id}
+  idle_time: 15
+  stop_screensaver_on_location_change: false
+  stop_screensaver_on_mouse_move: false
+  image_fit: cover
+  cards:
+    - type: vertical-stack
+      cards:
+        - type: custom:clock-weather-card
+          entity: weather.forecast_home
+          show_humidity: true
+        - type: custom:digital-clock
+  style:
+    wallpanel-screensaver-container:
+      background-color: '#333333dd'
+    wallpanel-screensaver-info-box:
+      '--wp-card-width': 450px
+      background-color: '#ffffff99'
+      box-shadow: >-
+        0px 2px 1px -1px rgba(0, 0, 0, 0.2), 0px 1px 1px 0px rgba(0, 0, 0,
+        0.14), 0px 1px 3px 0px rgba(0, 0, 0, 0.12)
+    wallpanel-screensaver-info-box-content:
+      '--ha-card-background': none
+      '--ha-card-box-shadow': none
+      '--ha-card-border-width': 0px
+      '--primary-background-color': '#fafafa'
+      '--secondary-background-color': '#e5e5e5'
+      '--primary-text-color': '#212121'
+      '--secondary-text-color': '#727272'
+views:
+  - type: "custom:grid-layout"
+    title: "Pantalla"
+    icon: "mdi:home"
+    path: "0"
+    layout:
+      grid-gap: 1px 1px
+      grid-template-columns: 20% 20% 20% 20% 20%
+      grid-template-rows: auto
+      justify-items: "center"
+      grid-template-areas: |
+        "  chips1            chips1          clock      scene1    scene2"
+        "  card1        card2      card3      card4      card5      "
+        "  card6   card7     card8     card9     card10           "
+    cards:
+      - type: custom:mushroom-chips-card
+        view_layout:
+            grid-area: "chips1"
+        chips:
+          - type: template
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.popup
+                data:
+                  title: UPS
+                  content:
+                    type: entities
+                    entities:
+                      - entity: sensor.ups_eyalbaron_battery_charge
+                        name: Battery charge
+                      - entity: sensor.ups_eyalbaron_input_voltage
+                        name: Input voltage
+                      - entity: sensor.ups_eyalbaron_load
+                        name: Load
+                      - entity: sensor.ups_eyalbaron_output_voltage
+                        name: Output voltage
+                      - entity: sensor.ups_eyalbaron_status
+                        name: Status
+                      - entity: sensor.ups_eyalbaron_status_data
+                        name: Status data
+                      - entity: sensor.myups_battery_runtime
+                        name: Remain time
+            icon: phu:apc-ups-upright
+            content: UPS
+            icon_color: |-
+              {% if is_state("sensor.tripplite_status", "Online Trimming Voltage") %}
+              green
+              {% else %}
+              red
+              {% endif %}
+          - type: template
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.popup
+                data:
+                  title: Wi-Fi
+                  content:
+                    type: picture
+                    image: /local/qr_code.jpeg
+            icon: mdi:wifi
+            content: Wifi
+            icon_color: blue
+
+          - type: entity
+            entity: sensor.moon_phase
+          - type: entity
+            entity: sensor.season
+          - type: template
+            icon: mdi:earth
+            icon_color: blue
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.popup
+                data:
+                  title: Mundo
+                  size: wide
+                  content:
+                    type: iframe
+                    url: /dashboard-zonas/0?wp_enabled=true
+                    aspect_ratio: 100%
+          - type: template
+            entity: light.light_group
+            icon_color: |-
+              {% if is_state("light.light_group", "on") %}
+              orange
+              {% else %}
+              disabled
+              {% endif %}
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.popup
+                data:
+                  title: Luces Encendidas
+                  content:
+                    type: custom:auto-entities
+                    card:
+                      type: entities
+                    filter:
+                      include:
+                        - group: light.light_group
+                          state: "on"
+                          domain: light
+                          options:
+                            type: custom:template-entity-row
+                            secondary: |
+                              {{ area_name(config.entity) }}
+                            toggle: true
+                      exclude:
+                        - attributes:
+                            icon: mdi:lightbulb-group
+                        - hidden_by: user
+            icon: mdi:lightbulb-group
+          - type: action
+            icon: mdi:wrench
+            tap_action:
+              action: fire-dom-event
+              confirmation:
+                text: >-
+                  Se va a reparar el sistema esto puede tardar aproximadamente un
+                  minuto, quieres continuar?
+              browser_mod:
+                service: browser_mod.sequence
+                data:
+                  sequence:
+                    - service: browser_mod.popup
+                      data:
+                        content: >
+                          <p> <ha-icon icon="mdi:chat-question" style="color:
+                          green;"></ha-icon> <b> Deseas reiniciar las
+                          pantallas?</b></p>
+                        right_button: Si
+                        left_button: "No"
+                        timeout: 10000
+                        right_button_action:
+                          service: script.reiniciar_pantallas
+                          data: {}
+                    - service: browser_mod.delay
+                      data:
+                        time: 10000
+                    - service: browser_mod.popup
+                      data:
+                        title: Reparando
+                        content:
+                          type: picture
+                          image: >-
+                            https://64.media.tumblr.com/130e0d3f6f2e3dd82eeb8074d41711d7/tumblr_naa0xsYiwQ1th1t41o1_1280.gifv
+                          tap_action:
+                            action: none
+                          hold_action:
+                            action: none
+                        dismissable: false
+                    - service: automation.trigger
+                      data:
+                        skip_condition: true
+                        entity_id:
+                          - automation.shellies_announce
+                          - automation.shellies_announce_gen2
+                    - service: browser_mod.delay
+                      data:
+                        time: 10000
+                    - service: browser_mod.close_popup
+                    - service: browser_mod.notification
+                      data:
+                        message: >-
+                          Ya termino la reparacion, en caso de que el problema
+                          persista favor de contactar con soporte tecnico
+                        duration: 5000
+          - type: template
+            icon: mdi:television
+            icon_color: |-
+              {% if is_state("binary_sensor.estado_pantalla_control", "on") %}
+              orange
+              {% else %}
+              disabled
+              {% endif %}
+            tap_action:
+              action: fire-dom-event
+              browser_mod:
+                service: browser_mod.popup
+                data:
+                  title: Pantallas
+                  content:
+                    type: vertical-stack
+                    cards:
+                      - type: custom:mushroom-entity-card
+                        entity: switch.pantalla_control
+                        icon: mdi:television
+                        layout: vertical
+                        fill_container: true
+                        secondary_info: state
+                        primary_info: name
+                        tap_action:
+                          action: toggle
+                        hold_action:
+                          action: none
+                        double_tap_action:
+                          action: none
+                      - type: custom:mushroom-entity-card
+                        entity: switch.pantalla_sala
+                        icon: mdi:television
+                        layout: vertical
+                        fill_container: true
+                        secondary_info: state
+                        primary_info: name
+                        tap_action:
+                          action: toggle
+                        hold_action:
+                          action: none
+                        double_tap_action:
+                          action: none
+        alignment: center
+      - view_layout:
+            grid-area: "clock"
+        type: custom:digital-clock
+        timeFormat:
+          hour: 2-digit
+          minute: 2-digit
+          hour12: true
+      - type: horizontal-stack
+        view_layout:
+            grid-area: "scene1"
+        cards:
+          - type: 'custom:button-card'
+            template: 
+              - card_script
+              - popup_iframe
+            variables:
+              ulm_card_script_title: Audio
+              ulm_card_script_icon: 'mdi:music'
+              url: /dashboard-general/2
+              name: Audio
+      - type: custom:mushroom-light-card
+        view_layout:
+          grid-area: "scene2"
+        entity: light.light_group
+        show_brightness_control: true
+        layout: horizontal
+        fill_container: true
+        use_light_color: false
+        collapsible_controls: true
+        show_color_control: false
+        show_color_temp_control: true
+      - type: 'custom:button-card'
+        view_layout:
+          grid_area: "card1"
+        template:
+          - card_room
+        variables:
+          ulm_card_ring_brightness_entity: "light.shelly_1_mini_gen3_cc8da243dc58_relay_0"
+      
+      - type: custom:mod-card
+        view_layout:
+          grid_area: "card2"
+        card:
+          type: vertical-stack
+          cards:
+            - type: custom:button-card
+              name: Family
+              show_label: true
+              label: |
+                [[[
+                 const state = states['light.shelly_1_mini_gen3_cc8da243dc58_relay_0']?.state;
+                 if (state !== 'on') return '';
+                 const bri = states['light.shelly_1_mini_gen3_cc8da243dc58_relay_0']?.attributes?.brightness ?? 0;
+                 const percent = Math.round((bri / 255) * 100);
+                 return percent + '%';
+                ]]]
+              image: /local/images/family.jpg
+              custom_fields:
+                entity_1:
+                  card:
+                    type: custom:button-card
+                    entity: input_number.text
+                    show_name: false
+                    styles:
+                      card:
+                        - border-radius: 50%;
+                        - height: 80px;
+                        - width: 80px;
+                main:
+                  card:
+                    type: custom:ring-brightness-card
+                    entity: input_number.test
+                    show_state: false
+                    image: /local/images/family.jpg
+                    stroke: 20
+                    start_angle: 320
+                    end_angle: 115
+              styles:
+                card:
+                  - height: 350px;
+                  - width: 350px;
+                  - background: >-
+                      linear-gradient(135deg, rgba(2,255,255,0.9) 0%,
+                      rgba(5,100,250,0.5) 100%)
+                  - border-radius: 20px
+                  - padding: 20px
+                  - border: none
+                name:
+                  - font-size: 24px
+                  - font-weight: 600
+                  - color: white
+                  - text-align: left
+                  - position: absolute
+                  - top: 20px
+                  - left: 20px
+                label:
+                  - font-size: 16px
+                  - color: "#999"
+                  - position: absolute
+                  - top: 55px
+                  - left: 20px
+                custom_fields:
+                  main:
+                    - position: absolute;
+                    - bottom: "-70px;"
+                    - left: "-30PX"
+                    - transform: |
+                        - transform: |
+                        [[[
+                          const state = states['input_number.test']?.state;
+                          return state === 'on'
+                            ? 'scale(1.8) translateY(-15px) translateX(20px)'
+                            : 'scale(1) translateY(0)';
+                        ]]]
+                    - transition: transform 0.5s ease-in-out
+                    - box-shadow: none;
+                  entity_1:
+                    - position: absolute;
+                    - top: 20px;
+                    - right: 20px;
