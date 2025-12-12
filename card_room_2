@@ -1,0 +1,267 @@
+---
+card_room_2:
+  template:
+    - "ulm_translation_engine"
+  entity: "[[[ return variables.ulm_card_ring_brightness_entity; ]]]"
+  triggers_update:
+    - "[[[ return variables.ulm_card_ring_brightness_entity; ]]]"
+    - "[[[ return variables.entity_1?.entity; ]]]"
+    - "[[[ return variables.entity_2?.entity; ]]]"
+    - "[[[ return variables.entity_3?.entity; ]]]"
+    - "[[[ return variables.entity_4?.entity; ]]]"
+  variables:
+    ulm_card_ring_brightness_entity: ""
+    ulm_card_ring_brightness_name: ""
+    ulm_card_ring_brightness_image: ""
+    ulm_card_ring_brightness_stroke: 20
+    ulm_card_ring_brightness_start_angle: 318
+    ulm_card_ring_brightness_end_angle: 124
+    ulm_card_ring_brightness_gradient_start: "#ffd54f"
+    ulm_card_ring_brightness_gradient_end: "#ffb300"
+    ulm_card_ring_brightness_throttle_delay: 50
+    ulm_card_ring_brightness_show_percentage: true
+    ulm_card_ring_brightness_show_state: false
+    ulm_card_room_name: ""
+    ulm_card_room_background_gradient: "radial-gradient(circle,rgba(238, 174, 202, 1) 0%, rgba(148, 187, 233, 1) 100%);"
+    entity_1: {}
+    entity_2: {}
+    entity_3: {}
+    entity_4: {}
+  size: "45%"
+  aspect_ratio: "1/1"
+  tap_action:
+    action: "more-info"
+    entity: "[[[ return variables.ulm_card_ring_brightness_entity; ]]]"
+
+  show_name: true
+  show_label: true
+  show_icon: false
+
+  name: >
+    [[[
+      return variables.ulm_card_room_name 
+        || states[variables.ulm_card_ring_brightness_entity]?.attributes?.friendly_name 
+        || "";
+    ]]]
+
+  label: >
+    [[[
+      const e = variables.ulm_card_ring_brightness_entity;
+      if (states[e]?.state !== "on") return "";
+      const bri = states[e]?.attributes?.brightness ?? 0;
+      return Math.round(bri / 2.55) + "%";
+    ]]]
+
+
+  styles:
+    grid:
+      - grid-template-areas: |
+          "n n n i1"
+          "l l l i2"
+          "main main main i3"
+          "main main main i4"
+      - grid-template-columns: "1fr 1fr 1fr 80px"
+      - grid-template-rows: "40px 35px 1fr 1fr"
+      - gap: "10px"
+      - padding: "20px"
+
+    card:
+      - background: "[[[ return variables.ulm_card_room_background_gradient; ]]]"
+      - border-radius: "20px"
+      - border: "none"
+      - box-shadow: "var(--box-shadow)"
+
+    name:
+      - grid-area: "n"
+      - justify-self: "start"
+      - align-self: "end"
+      - font-size: "24px"
+      - font-weight: "600"
+      - color: "white"
+      - font-weight: "bold"
+      - filter: "opacity(40%)"
+      - margin-left: "12px"
+      - max-width: "[[[ return calc(100% - (12px + ${!variables?.entity_1 && !variables?.entity_2 ? 5 : 0}px)); ]]]"
+      - text-overflow: "ellipsis"
+      - overflow: "hidden"
+      - margin-top: "[[[ return !variables?.entity_1 ? '-24%' : '-10%'; ]]]"
+
+    label:
+      - grid-area: "l"
+      - justify-self: "start"
+      - align-self: "start"
+      - font-weight: "bold"
+      - font-size: "16px"
+      - color: "rgba(255,255,255,0.6)"
+      - margin-left: "12px"
+      - max-width: "[[[ return calc(100% - (12px + ${!variables?.entity_1 && !variables?.entity_2 ? 5 : 0}px)); ]]]"
+      - text-overflow: "ellipsis"
+      - overflow: "hidden"
+      - margin-top: "[[[ return !variables?.entity_1 ? '-24%' : '-3%'; ]]]"
+
+    custom_fields:
+      main:
+        - transform: >
+            [[[
+              const ent = variables.ulm_card_ring_brightness_entity;
+              const st = states[ent]?.state;
+              return st === 'on'
+                ? 'scale(1.8) translateY(-15px) translateX(20px)'
+                : 'scale(1) translateY(0)';
+            ]]]
+        - transition: transform 0.5s ease
+        - position: absolute
+        - max-width: none
+        - max-height: none
+        - bottom: "-70px;"
+        - left: "-30PX"
+      i1:
+        - grid-area: "i1"
+        - border-radius: "50%"
+      i2:
+        - grid-area: "i2"
+        - border-radius: "50%"
+      i3:
+        - grid-area: "i3"
+        - border-radius: "50%"
+      i4:
+        - grid-area: "i4"
+        - border-radius: "50%"
+  custom_fields:
+    main:
+      card:
+        type: "custom:ring-brightness-card"
+        entity: "[[[ return variables.ulm_card_ring_brightness_entity; ]]]"
+        name: "[[[ return variables.ulm_card_ring_brightness_name; ]]]"
+        image: "[[[ return variables.ulm_card_ring_brightness_image; ]]]"
+
+        # IMPORTANTE: SIZE FIJO (LOS DINÁMICOS NO FUNCIONAN EN ESTE CARD)
+        size: 180
+
+        stroke: "[[[ return variables.ulm_card_ring_brightness_stroke; ]]]"
+        start_angle: "[[[ return variables.ulm_card_ring_brightness_start_angle; ]]]"
+        end_angle: "[[[ return variables.ulm_card_ring_brightness_end_angle; ]]]"
+        gradient_start: "[[[ return variables.ulm_card_ring_brightness_gradient_start; ]]]"
+        gradient_end: "[[[ return variables.ulm_card_ring_brightness_gradient_end; ]]]"
+        throttle_delay: "[[[ return variables.ulm_card_ring_brightness_throttle_delay; ]]]"
+        show_percentage: "[[[ return variables.ulm_card_ring_brightness_show_percentage; ]]]"
+        show_state: "[[[ return variables.ulm_card_ring_brightness_show_state; ]]]"
+
+    i1:
+      card:
+        type: "custom:button-card"
+        template: >
+          [[[
+            let templates = [ 'widget_icon_room' ];
+            if (variables?.entity_1?.templates?.length) {
+              templates.push(...variables.entity_1.templates);
+            }
+            return templates;
+          ]]]
+        variables: "[[[ return variables?.entity_1; ]]]"
+        state:
+          - operator: "template"
+            value: "[[[ return !variables.entity_1; ]]]"
+            styles:
+              card:
+                - display: "none"
+        entity: "[[[ return variables?.entity_1?.entity_id; ]]]"
+    i2:
+      card:
+        type: "custom:button-card"
+        template: >
+          [[[
+            let templates = [ 'widget_icon_room' ];
+            if (variables?.entity_2?.templates?.length) {
+              templates.push(...variables.entity_2.templates);
+            }
+            return templates;
+          ]]]
+        variables: "[[[ return variables?.entity_2; ]]]"
+        state:
+          - operator: "template"
+            value: "[[[ return !variables.entity_2; ]]]"
+            styles:
+              card:
+                - display: "none"
+        entity: "[[[ return variables?.entity_2?.entity_id; ]]]"
+
+    i3:
+      card:
+        type: "custom:button-card"
+        template: >
+          [[[
+            let templates = [ 'widget_icon_room' ];
+            if (variables?.entity_3?.templates?.length) {
+              templates.push(...variables.entity_3.templates);
+            }
+            return templates;
+          ]]]
+        variables: "[[[ return variables?.entity_3; ]]]"
+        state:
+          - operator: "template"
+            value: "[[[ return !variables.entity_3; ]]]"
+            styles:
+              card:
+                - display: "none"
+        entity: "[[[ return variables?.entity_3?.entity_id; ]]]"
+
+    i4:
+      card:
+        type: "custom:button-card"
+        template: >
+          [[[
+            let templates = [ 'widget_icon_room' ];
+            if (variables?.entity_4?.templates?.length) {
+              templates.push(...variables.entity_4.templates);
+            }
+            return templates;
+          ]]]
+        variables: "[[[ return variables?.entity_4; ]]]"
+        state:
+          - operator: "template"
+            value: "[[[ return !variables.entity_4; ]]]"
+            styles:
+              card:
+                - display: "none"
+        entity: "[[[ return variables?.entity_4?.entity_id; ]]]"
+widget_icon_room:
+  variables:
+    tap_action:
+      action: "toggle"
+    hold_action:
+      action: "more-info"
+  tap_action:
+    action: "[[[ return variables?.tap_action?.action ? variables.tap_action.action : 'none'; ]]]"
+    entity: "[[[ return variables.tap_action.entity; ]]]"
+    navigation_path: "[[[ return variables.tap_action.navigation_path; ]]]"
+    url_path: "[[[ return variables.tap_action.url_path; ]]]"
+    perform_action: "[[[ return variables.tap_action.service; ]]]"
+    data: "[[[ return variables.tap_action.service_data; ]]]"
+  hold_action:
+    action: "[[[ return variables?.hold_action?.action ? variables.hold_action.action : 'none'; ]]]"
+    entity: "[[[ return variables.hold_action.entity; ]]]"
+    navigation_path: "[[[ return variables.hold_action.navigation_path; ]]]"
+    url_path: "[[[ return variables.hold_action.url_path; ]]]"
+    perform_action: "[[[ return variables.hold_action.service; ]]]"
+    data: "[[[ return variables.hold_action.service_data; ]]]"
+  size: "15px"
+  color: "var(--google-grey)"
+  show_icon: true
+  show_name: false
+  styles:
+    icon:
+      - width: "50%"
+      - height: "50%"
+      - line-height: "0"
+      - color: "rgba(var(--color-theme),0.2)"
+    img_cell:
+      - border-radius: "50%"
+      - background-color: "rgba(var(--color-theme),0.05)"
+    grid:
+      - grid-template-areas: "'i'"
+    card:
+      - height: "100%"
+      - box-shadow: "none"
+      - padding: "0px"
+      - border-radius: "50%"
